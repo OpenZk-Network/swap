@@ -1,15 +1,15 @@
 // src/App.jsx
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import './App.css';
-import Swap from './components/Swap';
+import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import "./App.css";
+import Swap from "./components/Swap";
 
 function Home() {
   return (
     <div className="container mt-5 text-center">
-      <h1>Welcome to Swap App</h1>
+      <h1>zkSwap</h1>
       <p>A simple token swap interface</p>
       <Link to="/swap" className="btn btn-primary">
-        Go to Swap
+        Swap
       </Link>
     </div>
   );
