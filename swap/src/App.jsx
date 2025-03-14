@@ -2,15 +2,21 @@
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import "./App.css";
 import Swap from "./components/Swap";
+import Pools from "./components/Pools";
 
 function Home() {
   return (
     <div className="container mt-5 text-center">
       <h1>zkSwap</h1>
       <p>A simple token swap interface</p>
-      <Link to="/swap" className="btn btn-primary">
-        Swap
-      </Link>
+      <div className="d-flex justify-content-center gap-3">
+        <Link to="/swap" className="btn btn-primary">
+          Swap
+        </Link>
+        <Link to="/pools" className="btn btn-outline-primary">
+          Pools
+        </Link>
+      </div>
     </div>
   );
 }
@@ -43,6 +49,11 @@ function App() {
                   Swap
                 </Link>
               </li>
+              <li className="nav-item">
+                <Link className="nav-link" to="/pools">
+                  Pools
+                </Link>
+              </li>
             </ul>
           </div>
         </div>
@@ -51,6 +62,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/swap" element={<Swap />} />
+        <Route path="/pools" element={<Pools />} />
       </Routes>
     </Router>
   );

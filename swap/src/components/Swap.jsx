@@ -29,6 +29,8 @@ const Swap = () => {
   const [fromToken, setFromToken] = useState("");
   const [toToken, setToToken] = useState("");
   const [amount, setAmount] = useState("");
+  const [expectedOut, setExpectedOut] = useState("");
+  const [slippage, setSlippage] = useState(0.5);
   const [isApproved, setIsApproved] = useState(false);
   const [isApproving, setIsApproving] = useState(false);
   const [isSwapping, setIsSwapping] = useState(false);
@@ -36,6 +38,57 @@ const Swap = () => {
   const [signer, setSigner] = useState(null);
   const [account, setAccount] = useState("");
   const [connected, setConnected] = useState(false);
+
+  // Mock function to simulate getAmountOut from a DEX
+  const mockGetAmountOut = (fromToken, toToken, amountIn) => {
+    if (!amountIn || parseFloat(amountIn) <= 0 || !fromToken || !toToken) {
+      return "0";
+    }
+    
+    const fromTokenDetails = getTokenBySymbol(fromToken);
+    const toTokenDetails = getTokenBySymbol(toToken);
+    
+    if (!fromTokenDetails || !toTokenDetails) {
+      return "0";
+    }
+    
+    // Mock exchange rates (in a real implementation, this would come from the DEX contract)
+    const exchangeRates = {
+      'ETH_USDT': 3000,    // 1 ETH = 3000 USDT
+      'ETH_WBTC': 0.07,    // 1 ETH = 0.07 WBTC
+      'WBTC_ETH': 14.28,   // 1 WBTC = 14.28 ETH
+      'WBTC_USDT': 45000,  // 1 WBTC = 45000 USDT
+      'USDT_ETH': 0.00033, // 1 USDT = 0.00033 ETH
+      'USDT_WBTC': 0.000022, // 1 USDT = 0.000022 WBTC
+      'USDC_USDT': 1,      // 1 USDC = 1 USDT
+      'USDT_USDC': 1,      // 1 USDT = 1 USDC
+      'DAI_USDT': 0.998,   // 1 DAI = 0.998 USDT
+      'USDT_DAI': 1.002,   // 1 USDT = 1.002 DAI
+      'LINK_ETH': 0.016,   // 1 LINK = 0.016 ETH
+      'ETH_LINK': 62.5,    // 1 ETH = 62.5 LINK
+      'UNI_ETH': 0.006,    // 1 UNI = 0.006 ETH
+      'ETH_UNI': 166.67,   // 1 ETH = 166.67 UNI
+    };
+    
+    const pairKey = `${fromToken}_${toToken}`;
+    const rate = exchangeRates[pairKey] || 1; // Default to 1:1 if rate not defined
+    
+    // Calculate the expected amount out
+    const amountOut = parseFloat(amountIn) * rate;
+    
+    // Format according to token decimals
+    return amountOut.toFixed(toTokenDetails.decimals > 6 ? 6 : toTokenDetails.decimals);
+  };
+
+  // Calculate amount out when inputs change
+  useEffect(() => {
+    if (amount && parseFloat(amount) > 0 && fromToken && toToken) {
+      const amountOut = mockGetAmountOut(fromToken, toToken, amount);
+      setExpectedOut(amountOut);
+    } else {
+      setExpectedOut("");
+    }
+  }, [amount, fromToken, toToken]);
 
   // Load tokens from JSON file
   useEffect(() => {
@@ -160,9 +213,14 @@ const Swap = () => {
       const router = new ethers.Contract(UNISWAP_ROUTER_ADDRESS, UNISWAP_ROUTER_ABI, signer);
       const amountIn = ethers.utils.parseUnits(amount, fromTokenDetails.decimals);
 
-      // Set amountOutMin to 0 for demo purposes - in production
-      // you'd want to set a minimum amount to prevent slippage
-      const amountOutMin = 0;
+      // Calculate minimum amount out based on slippage
+      // In a real implementation, we would get this from the DEX
+      const expectedOutUnits = ethers.utils.parseUnits(expectedOut, toTokenDetails.decimals);
+      const slippageFactor = 10000 - Math.floor(slippage * 100); // 0.5% -> 9950
+      const amountOutMin = expectedOutUnits.mul(slippageFactor).div(10000);
+
+      console.log(`Expected out: ${expectedOut} ${toTokenDetails.symbol}`);
+      console.log(`Minimum out (with ${slippage}% slippage): ${ethers.utils.formatUnits(amountOutMin, toTokenDetails.decimals)} ${toTokenDetails.symbol}`);
 
       // Create the token path
       const path = [fromTokenDetails.address, toTokenDetails.address];
@@ -243,12 +301,24 @@ const Swap = () => {
     console.log("From token changed to:", symbol);
     setFromToken(symbol);
     setIsApproved(false); // Reset approval when token changes
+    
+    // Update expected output
+    if (amount && parseFloat(amount) > 0 && symbol && toToken) {
+      const amountOut = mockGetAmountOut(symbol, toToken, amount);
+      setExpectedOut(amountOut);
+    }
   };
 
   const handleToTokenChange = (e) => {
     const symbol = e.target.value;
     console.log("To token changed to:", symbol);
     setToToken(symbol);
+    
+    // Update expected output
+    if (amount && parseFloat(amount) > 0 && fromToken && symbol) {
+      const amountOut = mockGetAmountOut(fromToken, symbol, amount);
+      setExpectedOut(amountOut);
+    }
   };
 
   // Find token details by symbol
@@ -365,6 +435,53 @@ const Swap = () => {
                     <span className="input-group-text">{fromToken}</span>
                   </div>
                 </div>
+
+                {expectedOut && amount && (
+                  <div className="mb-3">
+                    <div className="card">
+                      <div className="card-body p-3">
+                        <div className="d-flex justify-content-between mb-2">
+                          <span className="text-muted">Expected Output:</span>
+                          <span className="fw-bold">{expectedOut} {toToken}</span>
+                        </div>
+                        <div className="d-flex justify-content-between">
+                          <span className="text-muted">Minimum Received:</span>
+                          <span>
+                            {parseFloat(expectedOut) * (1 - slippage / 100).toFixed(6)} {toToken}
+                          </span>
+                        </div>
+                        <hr />
+                        <div className="d-flex justify-content-between align-items-center">
+                          <span className="text-muted">Slippage Tolerance:</span>
+                          <div className="btn-group">
+                            {[0.1, 0.5, 1.0].map((value) => (
+                              <button
+                                key={value}
+                                type="button"
+                                className={`btn btn-sm ${slippage === value ? 'btn-primary' : 'btn-outline-primary'}`}
+                                onClick={() => setSlippage(value)}
+                              >
+                                {value}%
+                              </button>
+                            ))}
+                            <div className="input-group ms-2" style={{ width: '80px' }}>
+                              <input
+                                type="number"
+                                className="form-control form-control-sm"
+                                value={slippage}
+                                onChange={(e) => setSlippage(parseFloat(e.target.value) || 0.5)}
+                                min="0.1"
+                                max="20"
+                                step="0.1"
+                              />
+                              <span className="input-group-text">%</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 <div className="d-grid gap-2">
                   <button
