@@ -12,8 +12,12 @@ const ERC20_ABI = [
 
 // Simplified Uniswap Router ABI (just what we need)
 const UNISWAP_ROUTER_ABI = [
-  "function swapExactTokensForTokens(uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline) external returns (uint[] memory amounts)",
-];
+  "function swapExactTokensForTokens(uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline) external returns (uint[] memory amounts)"];
+
+const SYNCSWAP_ROUTER_ABI = ["function swap(SwapPath[] memory paths, uint amountOutMin, uint deadline) external payable ensure(deadline) returns (IPool.TokenAmount memory amountOut))"];
+
+// https://github.com/syncswap/core-contracts/blob/master/contracts/pool/stable/SyncSwapStablePool.sol#L487
+const OTHER_ABI =["function getAmountOut(address _tokenIn, uint _amountIn, address _sender) external view override returns (uint _amountOut)"];
 
 const SYNCSWAP_ROUTER_ADDRESS = "0xDC33Cd0df1504cF5A3366C2522ca0a96E43Fec92";
 
@@ -28,7 +32,7 @@ const Swap = () => {
   const [isApproved, setIsApproved] = useState(false);
   const [isApproving, setIsApproving] = useState(false);
   const [isSwapping, setIsSwapping] = useState(false);
-  const [provider, setProvider] = useState(null);
+  const [, setProvider] = useState(null);
   const [signer, setSigner] = useState(null);
   const [account, setAccount] = useState("");
   const [connected, setConnected] = useState(false);
@@ -97,9 +101,7 @@ const Swap = () => {
       }
 
       const tokenContract = new ethers.Contract(fromTokenDetails.address, ERC20_ABI, signer);
-
       const amountWei = ethers.utils.parseUnits(amount || "0", fromTokenDetails.decimals);
-
       const allowance = await tokenContract.allowance(account, UNISWAP_ROUTER_ADDRESS);
 
       setIsApproved(allowance.gte(amountWei));
@@ -156,7 +158,6 @@ const Swap = () => {
 
       // Regular ERC20 token swap
       const router = new ethers.Contract(UNISWAP_ROUTER_ADDRESS, UNISWAP_ROUTER_ABI, signer);
-
       const amountIn = ethers.utils.parseUnits(amount, fromTokenDetails.decimals);
 
       // Set amountOutMin to 0 for demo purposes - in production
@@ -222,7 +223,6 @@ const Swap = () => {
 
       // Approve the router to spend tokens
       const tx = await tokenContract.approve(UNISWAP_ROUTER_ADDRESS, amountWei);
-
       console.log("Approval transaction submitted:", tx.hash);
 
       // Wait for transaction to be mined
