@@ -22,7 +22,7 @@ const OTHER_ABI =["function getAmountOut(address _tokenIn, uint _amountIn, addre
 const SYNCSWAP_ROUTER_ADDRESS = "0xDC33Cd0df1504cF5A3366C2522ca0a96E43Fec92";
 
 // Uniswap Router address (V2)
-const UNISWAP_ROUTER_ADDRESS = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
+// const UNISWAP_ROUTER_ADDRESS = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
 
 const Swap = () => {
   const [tokens, setTokens] = useState([]);
@@ -155,7 +155,7 @@ const Swap = () => {
 
       const tokenContract = new ethers.Contract(fromTokenDetails.address, ERC20_ABI, signer);
       const amountWei = ethers.utils.parseUnits(amount || "0", fromTokenDetails.decimals);
-      const allowance = await tokenContract.allowance(account, UNISWAP_ROUTER_ADDRESS);
+      const allowance = await tokenContract.allowance(account, SYNCSWAP_ROUTER_ADDRESS);
 
       setIsApproved(allowance.gte(amountWei));
       console.log(
@@ -210,7 +210,7 @@ const Swap = () => {
       }
 
       // Regular ERC20 token swap
-      const router = new ethers.Contract(UNISWAP_ROUTER_ADDRESS, UNISWAP_ROUTER_ABI, signer);
+      const router = new ethers.Contract(SYNCSWAP_ROUTER_ADDRESS, UNISWAP_ROUTER_ABI, signer);
       const amountIn = ethers.utils.parseUnits(amount, fromTokenDetails.decimals);
 
       // Calculate minimum amount out based on slippage
@@ -280,7 +280,7 @@ const Swap = () => {
       const amountWei = ethers.utils.parseUnits(amount, fromTokenDetails.decimals);
 
       // Approve the router to spend tokens
-      const tx = await tokenContract.approve(UNISWAP_ROUTER_ADDRESS, amountWei);
+      const tx = await tokenContract.approve(SYNCSWAP_ROUTER_ADDRESS, amountWei);
       console.log("Approval transaction submitted:", tx.hash);
 
       // Wait for transaction to be mined
