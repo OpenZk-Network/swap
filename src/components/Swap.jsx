@@ -56,18 +56,6 @@ const Swap = () => {
     const exchangeRates = {
       'ETH_USDT': 3000,    // 1 ETH = 3000 USDT
       'ETH_WBTC': 0.07,    // 1 ETH = 0.07 WBTC
-      'WBTC_ETH': 14.28,   // 1 WBTC = 14.28 ETH
-      'WBTC_USDT': 45000,  // 1 WBTC = 45000 USDT
-      'USDT_ETH': 0.00033, // 1 USDT = 0.00033 ETH
-      'USDT_WBTC': 0.000022, // 1 USDT = 0.000022 WBTC
-      'USDC_USDT': 1,      // 1 USDC = 1 USDT
-      'USDT_USDC': 1,      // 1 USDT = 1 USDC
-      'DAI_USDT': 0.998,   // 1 DAI = 0.998 USDT
-      'USDT_DAI': 1.002,   // 1 USDT = 1.002 DAI
-      'LINK_ETH': 0.016,   // 1 LINK = 0.016 ETH
-      'ETH_LINK': 62.5,    // 1 ETH = 62.5 LINK
-      'UNI_ETH': 0.006,    // 1 UNI = 0.006 ETH
-      'ETH_UNI': 166.67,   // 1 ETH = 166.67 UNI
     };
     
     const pairKey = `${fromToken}_${toToken}`;
