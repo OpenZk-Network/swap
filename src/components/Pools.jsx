@@ -12,13 +12,13 @@ const Pools = () => {
       {
         id: "0xBa8Dcd8d97e97fB9adcd2A825A66c29A8308dc23",
         token0: {
-          symbol: "USDC",
-          name: "USD Coin",
-          address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+          symbol: "ozUSD",
+          name: "ozUSD",
+          address: "0x03F5BE358fc2C4DF88723a63148bd829B8AA5c91",
           logoURI: "https://tokens.1inch.io/0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48.png",
         },
         token1: {
-          symbol: "wETH",
+          symbol: "ozETH",
           name: "Ethereum",
           address: "",
           logoURI: "https://tokens.1inch.io/0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee.png",
